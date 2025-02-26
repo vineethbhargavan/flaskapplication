@@ -1,37 +1,37 @@
-from flask import Flask, request, jsonify
-import logging
-from opencensus.ext.azure.log_exporter import AzureLogHandler
+import time
+from applicationinsights.flask.ext import AppInsights
+from flask import Flask
 
-# Initialize Flask App
+
+# create Flask app
 app = Flask(__name__)
+app.config['APPINSIGHTS_INSTRUMENTATIONKEY'] = os.getenv("APPINSIGHTS_INSTRUMENTATIONKEY") 
+#app.config['APPINSIGHTS_INSTRUMENTATIONKEY'] = 'xx-c1b6-4c52-beb4-bf55db27df07' 
 
-# Replace with your Application Insights Instrumentation Key
-INSTRUMENTATION_KEY = os.getenv("APPINSIGHTS_INSTRUMENTATIONKEY")
+appinsights = AppInsights(app)
 
-# Configure Logging with Application Insights
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-handler = AzureLogHandler(connection_string=f"InstrumentationKey={INSTRUMENTATION_KEY}")
-logger.addHandler(handler)
+
+# force flushing application insights handler after each request
+@app.after_request
+def after_request(response):
+    appinsights.flush()
+    return response
+
 
 @app.route('/')
-def home():
-    logger.info("Home route was accessed")  # Log to App Insights
-    return "Hello, Flask App with Application Insights!"
+def hello_world():
+    return 'Hello, World!'
 
-@app.route('/event', methods=['POST'])
-def log_event():
-    data = request.json
-    logger.info(f"Received event: {data}")
-    return jsonify({"message": "Event logged to Application Insights"}), 200
 
-@app.route('/error')
-def trigger_error():
-    try:
-        raise Exception("This is a test exception for Application Insights")
-    except Exception as e:
-        logger.exception("Exception occurred!")  # Log exception to App Insights
-        return jsonify({"error": "An error occurred!"}), 500
+@app.route('/fail')
+def fail():
+    a=1+b
+    return 'Hello, World!'
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+
+@app.route('/sleep')
+def sleep():
+    time.sleep(2)
+    return 'Hello, World + 2s!'
+
+app.run()
