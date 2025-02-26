@@ -1,3 +1,4 @@
+import os
 import time
 from applicationinsights.flask.ext import AppInsights
 from flask import Flask
