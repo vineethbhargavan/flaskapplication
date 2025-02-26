@@ -1,2 +1,2 @@
-applicationinsights
+applicationinsights==0.11.10
 flask
