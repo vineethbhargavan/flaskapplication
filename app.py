@@ -35,4 +35,5 @@ def sleep():
     time.sleep(2)
     return 'Hello, World + 2s!'
 
-app.run()
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=8000)  # Listen on port 8000
